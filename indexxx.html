@@ -1,0 +1,616 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Gram Panchayat Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@500;700;800&family=Hind+Madurai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky header with a temple-border strip, left-aligned hero with four service doors, then task panels (track, pay, complain, notices) and a spec section for the SRS. */
+:root{
+  --bg:#F2F6F1; --surface:#FFFFFF; --fg:#13201A; --muted:#51625A; --line:#D3DDD4;
+  --brand:#1E5A3C; --brand-ink:#0E3322; --on-brand:#FFFFFF; --accent:#E2A00B; --soft:#E5EEE5;
+  --ok:#1B7A44; --warn:#9A6200; --bad:#B3341F;
+  --display:"Anek Tamil","Hind Madurai",system-ui,sans-serif;
+  --body:"Hind Madurai","Noto Sans Tamil",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1511; --surface:#15211A; --fg:#E7EFE8; --muted:#9BAFA2; --line:#28392E;
+  --brand:#6CCB98; --brand-ink:#A9E5C4; --on-brand:#0D1511; --accent:#F0B63A; --soft:#1C2C22;
+  --ok:#5CCB8A; --warn:#F0B63A; --bad:#F08A76; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1511; --surface:#15211A; --fg:#E7EFE8; --muted:#9BAFA2; --line:#28392E;
+  --brand:#6CCB98; --brand-ink:#A9E5C4; --on-brand:#0D1511; --accent:#F0B63A; --soft:#1C2C22;
+  --ok:#5CCB8A; --warn:#F0B63A; --bad:#F08A76; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:5rem}
+body{background:var(--bg);color:var(--fg);font:400 17px/1.6 var(--body);padding-block:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+h1,h2,h3{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0}
+a{color:var(--brand)}
+.wrap{max-width:1080px;margin-inline:auto}
+.eyebrow{font:500 .78rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);
+  margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px))) calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:1rem;min-height:3.6rem;flex-wrap:wrap;padding-block:.35rem}
+.brand{font:800 1.1rem var(--display);color:var(--brand-ink);text-decoration:none;display:flex;align-items:center;gap:.55rem;margin-right:auto}
+.brand i{width:1.7rem;height:1.7rem;border-radius:50%;background:var(--brand);display:grid;place-items:center}
+.brand i::after{content:"";width:.55rem;height:.55rem;background:var(--accent);transform:rotate(45deg)}
+nav{display:flex;gap:.2rem;flex-wrap:wrap}
+nav a{padding:.4rem .7rem;border-radius:6px;text-decoration:none;color:var(--fg);font-weight:500;font-size:.95rem}
+nav a:hover{background:var(--soft)}
+.lang{display:flex;border:1.5px solid var(--brand);border-radius:8px;overflow:hidden}
+.lang button{font:600 .9rem var(--body);padding:.35rem .75rem;border:0;background:transparent;color:var(--brand);cursor:pointer;min-height:2.2rem}
+.lang button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
+.border{height:10px;margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px))) calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  background:linear-gradient(135deg,var(--accent) 25%,transparent 25%) -5px 0/10px 10px,linear-gradient(225deg,var(--accent) 25%,transparent 25%) -5px 0/10px 10px;
+  background-color:var(--brand)}
+@media (max-width:640px){nav{display:none}}
+
+/* hero */
+.hero{padding-block:clamp(2.2rem,6vw,4.5rem) 2.2rem}
+.hero .wrap{display:grid;gap:1.4rem}
+.hero p.lead{font-size:1.2rem;max-width:40rem;color:var(--muted)}
+.btns{display:flex;gap:.7rem;flex-wrap:wrap}
+.btn{font:600 1rem var(--body);padding:.75rem 1.25rem;border-radius:8px;border:2px solid var(--brand);cursor:pointer;text-decoration:none;display:inline-block;min-height:2.9rem}
+.btn.primary{background:var(--brand);color:var(--on-brand)}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn:hover{filter:brightness(1.08)}
+.doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.9rem;margin-top:.6rem}
+.door{display:flex;gap:.8rem;align-items:center;padding:1rem;background:var(--surface);border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--fg);font-weight:600;min-width:0}
+.door:hover{border-color:var(--brand)}
+.door svg{flex:none;width:2.2rem;height:2.2rem;stroke:var(--brand);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+section{padding-block:clamp(2rem,5vw,3.4rem)}
+section.alt{background:var(--surface);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px))) calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));border-block:1px solid var(--line)}
+.head{display:grid;gap:.5rem;margin-bottom:1.6rem;max-width:42rem}
+.head p{color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1.4rem}
+.cols>*{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.3rem;display:grid;gap:1rem;align-content:start}
+section.alt .panel{background:var(--bg)}
+.tag{display:inline-block;font:500 .72rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:.3rem .5rem;border-radius:4px;background:var(--soft);color:var(--brand-ink);width:max-content}
+
+/* services */
+.svc{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.7rem;list-style:none;margin:0;padding:0}
+.svc li{padding:.8rem 1rem;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:500}
+.svc li small{display:block;color:var(--muted);font-weight:400;font-size:.85rem}
+.subhead{font:700 1rem var(--display);margin:1.6rem 0 .7rem}
+
+/* forms */
+label{display:grid;gap:.3rem;font-weight:600;font-size:.95rem}
+input,select,textarea{font:400 1rem var(--body);padding:.65rem .75rem;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%;min-height:2.8rem}
+input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+textarea{min-height:5.5rem;resize:vertical}
+.row{display:flex;gap:.6rem;flex-wrap:wrap}
+.row>*{flex:1 1 150px;min-width:0}
+.out{border-radius:8px;padding:.9rem 1rem;background:var(--soft);font-size:.98rem}
+.out[hidden]{display:none}
+.mono{font-family:var(--mono);font-size:.85rem}
+.note{font-size:.85rem;color:var(--muted)}
+
+/* stepper */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.steps li{display:flex;gap:.7rem;align-items:center;color:var(--muted)}
+.steps li b{width:1.7rem;height:1.7rem;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:500 .8rem var(--mono);flex:none}
+.steps li.done{color:var(--fg)} .steps li.done b{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.steps li.now{color:var(--fg);font-weight:600} .steps li.now b{border-color:var(--accent);background:var(--accent);color:#1a1200}
+.steps li.back{color:var(--bad);font-weight:600} .steps li.back b{border-color:var(--bad);background:var(--bad);color:var(--surface)}
+
+/* notices */
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{font:500 .9rem var(--body);padding:.4rem .85rem;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;min-height:2.3rem}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.notes{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.6rem}
+.notes li{display:grid;grid-template-columns:auto 1fr;gap:.2rem 1rem;padding:.9rem 1rem;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.notes time{font:500 .82rem var(--mono);color:var(--muted);grid-row:span 2;align-self:start;padding-top:.25rem}
+.notes .cat{font-size:.82rem;color:var(--brand-ink);font-weight:600}
+.empty{padding:1rem;color:var(--muted)}
+
+/* spec */
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.tabs button{font:600 .95rem var(--body);padding:.55rem 1rem;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;min-height:2.6rem}
+.tabs button[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.fr{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.fr li{display:grid;grid-template-columns:4rem 1fr;gap:.8rem;padding:.7rem .9rem;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.fr b{font:500 .85rem var(--mono);color:var(--brand-ink);padding-top:.2rem}
+.who{color:var(--muted);margin-bottom:.8rem;max-width:44rem}
+.nfr{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.8rem}
+.nfr div{padding:1rem;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.nfr strong{display:block;font:800 1.7rem/1.1 var(--display);color:var(--brand-ink);font-variant-numeric:tabular-nums}
+.nfr span{font-size:.9rem;color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem}
+th,td{text-align:left;padding:.7rem .9rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .8rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--soft)}
+td:first-child{font-weight:600;white-space:nowrap}
+td:last-child{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+ul.plain{margin:0;padding-left:1.2rem;display:grid;gap:.45rem}
+dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:.7rem 1.6rem;margin:0}
+dl div{padding:.6rem 0;border-bottom:1px solid var(--line)}
+dt{font-weight:700;font-family:var(--display)} dd{margin:0;color:var(--muted)}
+
+footer{padding-block:2rem 3rem;color:var(--muted);font-size:.92rem}
+footer .wrap{display:flex;gap:1rem 2rem;flex-wrap:wrap;justify-content:space-between}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><i aria-hidden="true"></i><span data-i18n="brand">Gram Panchayat Portal</span></a>
+    <nav aria-label="Main">
+      <a href="#services" data-i18n="nav_services">Services</a>
+      <a href="#track" data-i18n="nav_track">Track</a>
+      <a href="#notices" data-i18n="nav_notices">Notices</a>
+      <a href="#spec" data-i18n="nav_spec">Specification</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="l-en" aria-pressed="true">English</button>
+      <button type="button" id="l-ta" aria-pressed="false" lang="ta">தமிழ்</button>
+    </div>
+  </div>
+</header>
+<div class="border" aria-hidden="true"></div>
+
+<main id="top">
+<div class="hero"><div class="wrap">
+  <span class="eyebrow" data-i18n="eyebrow">Panchayat services online</span>
+  <h1 data-i18n="h1">Village paperwork, without the trip to the office.</h1>
+  <p class="lead" data-i18n="lead">Apply for certificates, pay house tax and report problems from your phone. Notices, budgets and Gram Sabha minutes are open to everyone, no login needed.</p>
+  <div class="btns">
+    <a class="btn primary" href="#signin" data-i18n="cta1">Sign in with mobile OTP</a>
+    <a class="btn ghost" href="#notices" data-i18n="cta2">View public notices</a>
+  </div>
+  <div class="doors">
+    <a class="door" href="#services"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg><span data-i18n="d1">Apply for a certificate</span></a>
+    <a class="door" href="#pay"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg><span data-i18n="d2">Pay house tax</span></a>
+    <a class="door" href="#complain"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M12 8.5v3M12 13.6v.1"/></svg><span data-i18n="d3">Report a problem</span></a>
+    <a class="door" href="#notices"><svg viewBox="0 0 24 24"><path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17.5 9a4 4 0 010 6"/></svg><span data-i18n="d4">Public notices</span></a>
+  </div>
+</div></div>
+
+<section id="services" class="alt"><div class="wrap">
+  <div class="head">
+    <h2 data-i18n="s_h">What you can do online</h2>
+    <p data-i18n="s_p">Register once with your name, address, ward number, ID details and mobile number. After that, each service is a short form with a document upload.</p>
+  </div>
+  <div class="subhead" data-i18n="s_cert">Certificates and licences</div>
+  <ul class="svc">
+    <li><span data-i18n="c1">Birth certificate</span></li>
+    <li><span data-i18n="c2">Death certificate</span></li>
+    <li><span data-i18n="c3">Residence certificate</span></li>
+    <li><span data-i18n="c4">Income certificate</span></li>
+    <li><span data-i18n="c5">Trade licence</span></li>
+  </ul>
+  <div class="subhead" data-i18n="s_fee">Taxes and local fees</div>
+  <ul class="svc">
+    <li><span data-i18n="f1">House tax</span><small data-i18n="f1d">Yearly, on homes and commercial buildings</small></li>
+    <li><span data-i18n="f2">Water tax</span></li>
+    <li><span data-i18n="f3">Other local fees</span></li>
+  </ul>
+  <div class="subhead" data-i18n="s_more">Also here</div>
+  <ul class="svc">
+    <li><span data-i18n="m1">Complaints and suggestions</span></li>
+    <li><span data-i18n="m2">Gram Sabha dates and minutes</span></li>
+    <li><span data-i18n="m3">Budgets and development works</span></li>
+    <li><span data-i18n="m4">Government scheme details</span></li>
+  </ul>
+</div></section>
+
+<section id="signin"><div class="wrap cols">
+  <div class="panel">
+    <h2 data-i18n="si_h">Sign in</h2>
+    <p data-i18n="si_p">Enter your mobile number. We send a one-time password (OTP) to confirm it is you.</p>
+    <form id="f-otp" novalidate>
+      <div class="row">
+        <label for="mob"><span data-i18n="mob">Mobile number</span><input id="mob" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="9XXXXXXXXX"></label>
+      </div>
+      <div class="btns" style="margin-top:.9rem"><button class="btn primary" type="submit" data-i18n="otp_btn">Send OTP</button></div>
+    </form>
+    <div class="out" id="otp-out" hidden role="status"></div>
+    <span class="tag" data-i18n="demo">Preview of the flow</span>
+  </div>
+  <div class="panel">
+    <h3 data-i18n="ok_h">After you sign in</h3>
+    <ul class="plain">
+      <li data-i18n="ok1">Edit your profile</li>
+      <li data-i18n="ok2">See every past application and payment</li>
+      <li data-i18n="ok3">Get SMS or email when something changes</li>
+      <li data-i18n="ok4">Download certificates and receipts</li>
+    </ul>
+  </div>
+</div></section>
+
+<section id="track" class="alt"><div class="wrap">
+  <div class="head">
+    <h2 data-i18n="t_h">Where is my application?</h2>
+    <p data-i18n="t_p">Every application shows its status. An official can approve it, reject it, or send it back with a written reason. Nothing is approved automatically.</p>
+  </div>
+  <div class="cols">
+    <div class="panel">
+      <form id="f-track" novalidate>
+        <label for="appid"><span data-i18n="t_lbl">Application number</span>
+          <input id="appid" value="GP-2026-00417" autocomplete="off" spellcheck="false"></label>
+        <div class="btns" style="margin-top:.9rem"><button class="btn primary" type="submit" data-i18n="t_btn">Check status</button></div>
+      </form>
+      <p class="note"><span data-i18n="t_try">Sample numbers to try:</span> <span class="mono">GP-2026-00417</span>, <span class="mono">GP-2026-00391</span>, <span class="mono">GP-2026-00402</span></p>
+      <span class="tag" data-i18n="sample">Sample data</span>
+    </div>
+    <div class="panel" id="track-out" aria-live="polite"></div>
+  </div>
+</div></section>
+
+<section id="pay"><div class="wrap cols">
+  <div class="panel">
+    <h2 data-i18n="p_h">Pay tax and fees</h2>
+    <p data-i18n="p_p">Pay by UPI, card or net banking, then download your receipt.</p>
+    <form id="f-pay" novalidate>
+      <div style="display:grid;gap:.8rem">
+        <label for="fee"><span data-i18n="p_fee">What are you paying for?</span>
+          <select id="fee"><option value="f1" data-i18n="f1">House tax</option><option value="f2" data-i18n="f2">Water tax</option><option value="f3" data-i18n="f3">Other local fees</option></select></label>
+        <div class="row">
+          <label for="ward"><span data-i18n="ward">Ward number</span><input id="ward" inputmode="numeric" placeholder="1"></label>
+          <label for="amt"><span data-i18n="amt">Amount (₹)</span><input id="amt" inputmode="decimal" placeholder="0"></label>
+        </div>
+      </div>
+      <div class="btns" style="margin-top:.9rem"><button class="btn primary" type="submit" data-i18n="p_btn">Continue to payment</button></div>
+    </form>
+    <div class="out" id="pay-out" hidden role="status"></div>
+    <span class="tag" data-i18n="demo">Preview of the flow</span>
+  </div>
+  <div class="panel" id="complain">
+    <h2 data-i18n="c_h">Report a problem</h2>
+    <p data-i18n="c_p">Broken streetlight, water leak, a suggestion for the village. You can follow it until it is closed.</p>
+    <form id="f-comp" novalidate>
+      <div style="display:grid;gap:.8rem">
+        <label for="cat"><span data-i18n="c_cat">Category</span>
+          <select id="cat"><option value="water" data-i18n="cat_water">Water supply</option><option value="light" data-i18n="cat_light">Streetlights</option><option value="road" data-i18n="cat_road">Roads and drains</option><option value="waste" data-i18n="cat_waste">Waste and sanitation</option><option value="sugg" data-i18n="cat_sugg">Suggestion</option></select></label>
+        <label for="desc"><span data-i18n="c_desc">What is the problem?</span><textarea id="desc"></textarea></label>
+      </div>
+      <div class="btns" style="margin-top:.9rem"><button class="btn primary" type="submit" data-i18n="c_btn">Submit</button></div>
+    </form>
+    <div class="out" id="comp-out" hidden role="status"></div>
+    <span class="tag" data-i18n="demo">Preview of the flow</span>
+  </div>
+</div></section>
+
+<section id="notices" class="alt"><div class="wrap">
+  <div class="head">
+    <h2 data-i18n="n_h">Public notice board</h2>
+    <p data-i18n="n_p">Open to everyone without a login, as the Right to Information Act expects. Search or filter by type.</p>
+  </div>
+  <div class="panel">
+    <label for="q"><span data-i18n="n_search">Search notices</span><input id="q" type="search" autocomplete="off"></label>
+    <div class="chips" id="chips" role="group" aria-label="Filter"></div>
+    <ul class="notes" id="notes" style="margin:0"></ul>
+    <span class="tag" data-i18n="sample">Sample data</span>
+  </div>
+</div></section>
+
+<section id="spec"><div class="wrap">
+  <div class="head">
+    <span class="eyebrow" data-i18n="sp_eye">From the software requirements specification</span>
+    <h2 data-i18n="sp_h">How the site is meant to work</h2>
+    <p data-i18n="sp_p">One site, three modules. Residents get simple pages in Tamil and English. Officials see pending work first. The admin looks after accounts, content and the audit trail.</p>
+  </div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" id="tab-citizen" aria-selected="true" data-m="citizen" data-i18n="mod_c">Citizen</button>
+    <button role="tab" id="tab-official" aria-selected="false" data-m="official" data-i18n="mod_o">Panchayat official</button>
+    <button role="tab" id="tab-admin" aria-selected="false" data-m="admin" data-i18n="mod_a">Admin</button>
+  </div>
+  <div role="tabpanel" id="tabpanel" aria-live="polite">
+    <p class="who" id="who"></p>
+    <ul class="fr" id="frs"></ul>
+  </div>
+
+  <div class="subhead" style="margin-top:2.4rem" data-i18n="q_h">Quality targets</div>
+  <div class="nfr">
+    <div><strong>500+</strong><span data-i18n="q1">people using the site at once</span></div>
+    <div><strong>&lt; 4 s</strong><span data-i18n="q2">page load on a 3G connection</span></div>
+    <div><strong>99.5%</strong><span data-i18n="q3">uptime, apart from planned maintenance</span></div>
+    <div><strong>AES-256</strong><span data-i18n="q4">encryption for stored sensitive data, TLS when sent</span></div>
+    <div><strong data-i18n="q5v">Daily</strong><span data-i18n="q5">database backup</span></div>
+  </div>
+  <ul class="plain" style="margin-top:1rem">
+    <li data-i18n="q6">Passwords are hashed, and an account locks after too many failed logins.</li>
+    <li data-i18n="q7">Large readable text, short forms, phone-first layout, and basic accessibility for people with visual or motor difficulties.</li>
+    <li data-i18n="q8">Built so it can later connect to district and state e-governance portals and serve other panchayats.</li>
+  </ul>
+
+  <div class="subhead" style="margin-top:2.4rem" data-i18n="r_h">Rules the system follows</div>
+  <ul class="plain">
+    <li data-i18n="r1">All traffic between users and the site goes over SSL/TLS.</li>
+    <li data-i18n="r2">Personal data follows Indian IT and data protection rules, and is collected only when a service needs it.</li>
+    <li data-i18n="r3">An official checks every application and its documents before approving.</li>
+    <li data-i18n="r4">Access depends on role, so each person sees and changes only what their job allows.</li>
+    <li data-i18n="r5">Every approval, payment and content change is saved in the audit log.</li>
+    <li data-i18n="r6">Notices, budgets and minutes stay public, with no login.</li>
+  </ul>
+
+  <div class="subhead" style="margin-top:2.4rem" data-i18n="db_h">Data model</div>
+  <div class="scroll"><table>
+    <thead><tr><th data-i18n="db_t">Table</th><th data-i18n="db_f">Main fields</th></tr></thead>
+    <tbody>
+      <tr><td>Resident</td><td>ResidentID, Name, Age, Gender, Address, Ward, Mobile, Email, Status</td></tr>
+      <tr><td>Application</td><td>ApplicationID, ResidentID, ServiceType, Documents, Status, SubmittedOn, DecidedOn, Remarks</td></tr>
+      <tr><td>Payment</td><td>PaymentID, ResidentID, FeeType, Amount, Mode, TransactionRef, PaidOn</td></tr>
+      <tr><td>Complaint</td><td>ComplaintID, ResidentID, Category, Description, AssignedTo, Status, CreatedOn</td></tr>
+      <tr><td>Notice</td><td>NoticeID, Title, Content, Category, PostedBy, PostedOn</td></tr>
+      <tr><td>User (Official/Admin)</td><td>UserID, Username, PasswordHash, Role, Status</td></tr>
+      <tr><td>AuditLog</td><td>LogID, UserID, Action, Timestamp</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="cols" style="margin-top:2.4rem">
+    <div>
+      <div class="subhead" style="margin-top:0" data-i18n="st_h">Technology options</div>
+      <ul class="plain">
+        <li><b data-i18n="st1">Database</b>: MySQL or PostgreSQL</li>
+        <li><b data-i18n="st2">Backend</b>: Node.js, Django or Spring Boot</li>
+        <li><b data-i18n="st3">Frontend</b>: React, Angular, or plain HTML, CSS and JavaScript</li>
+        <li><b data-i18n="st4">Outside services</b>: <span data-i18n="st4v">payment gateway (UPI, cards, net banking), SMS gateway, email service</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="subhead" style="margin-top:0" data-i18n="fu_h">Future scope</div>
+      <ul class="plain">
+        <li data-i18n="fu1">Links with state and national e-governance portals, such as e-Sevai and other Digital India services</li>
+        <li data-i18n="fu2">A mobile app that works offline where internet is weak</li>
+        <li data-i18n="fu3">A Tamil voice assistant or chatbot for people who find forms hard</li>
+        <li data-i18n="fu4">Live streaming and recordings of Gram Sabha meetings</li>
+        <li data-i18n="fu5">Dashboards on village development: water, sanitation, scheme progress</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="subhead" style="margin-top:2.4rem" data-i18n="g_h">Glossary</div>
+  <dl id="gl"></dl>
+
+  <div class="subhead" style="margin-top:2.4rem" data-i18n="ref_h">References</div>
+  <ul class="plain">
+    <li>IEEE Std 830-1998, Recommended Practice for Software Requirements Specifications</li>
+    <li>The Tamil Nadu Panchayats Act, 1994</li>
+    <li>Information Technology Act, 2000, and the Right to Information Act, 2005</li>
+    <li data-i18n="ref4">Government of India web accessibility and security guidelines for public websites</li>
+  </ul>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div><strong data-i18n="ft1">Software Requirements Specification: Gram Panchayat Website</strong><br><span data-i18n="ft2">Document dated 21 October 2026</span></div>
+  <div><strong>SADHANA H</strong><br><span class="mono">111726115036</span><br>ECE (VLSI) - I YEAR</div>
+</div></footer>
+
+<script>
+(function(){
+var T={
+en:{
+brand:"Gram Panchayat Portal",nav_services:"Services",nav_track:"Track",nav_notices:"Notices",nav_spec:"Specification",
+eyebrow:"Panchayat services online",
+h1:"Village paperwork, without the trip to the office.",
+lead:"Apply for certificates, pay house tax and report problems from your phone. Notices, budgets and Gram Sabha minutes are open to everyone, no login needed.",
+cta1:"Sign in with mobile OTP",cta2:"View public notices",
+d1:"Apply for a certificate",d2:"Pay house tax",d3:"Report a problem",d4:"Public notices",
+s_h:"What you can do online",s_p:"Register once with your name, address, ward number, ID details and mobile number. After that, each service is a short form with a document upload.",
+s_cert:"Certificates and licences",c1:"Birth certificate",c2:"Death certificate",c3:"Residence certificate",c4:"Income certificate",c5:"Trade licence",
+s_fee:"Taxes and local fees",f1:"House tax",f1d:"Yearly, on homes and commercial buildings",f2:"Water tax",f3:"Other local fees",
+s_more:"Also here",m1:"Complaints and suggestions",m2:"Gram Sabha dates and minutes",m3:"Budgets and development works",m4:"Government scheme details",
+si_h:"Sign in",si_p:"Enter your mobile number. We send a one-time password (OTP) to confirm it is you.",mob:"Mobile number",otp_btn:"Send OTP",
+demo:"Preview of the flow",sample:"Sample data",
+ok_h:"After you sign in",ok1:"Edit your profile",ok2:"See every past application and payment",ok3:"Get SMS or email when something changes",ok4:"Download certificates and receipts",
+t_h:"Where is my application?",t_p:"Every application shows its status. An official can approve it, reject it, or send it back with a written reason. Nothing is approved automatically.",
+t_lbl:"Application number",t_btn:"Check status",t_try:"Sample numbers to try:",
+p_h:"Pay tax and fees",p_p:"Pay by UPI, card or net banking, then download your receipt.",p_fee:"What are you paying for?",ward:"Ward number",amt:"Amount (₹)",p_btn:"Continue to payment",
+c_h:"Report a problem",c_p:"Broken streetlight, water leak, a suggestion for the village. You can follow it until it is closed.",c_cat:"Category",c_desc:"What is the problem?",c_btn:"Submit",
+cat_water:"Water supply",cat_light:"Streetlights",cat_road:"Roads and drains",cat_waste:"Waste and sanitation",cat_sugg:"Suggestion",
+n_h:"Public notice board",n_p:"Open to everyone without a login, as the Right to Information Act expects. Search or filter by type.",n_search:"Search notices",
+sp_eye:"From the software requirements specification",sp_h:"How the site is meant to work",
+sp_p:"One site, three modules. Residents get simple pages in Tamil and English. Officials see pending work first. The admin looks after accounts, content and the audit trail.",
+mod_c:"Citizen",mod_o:"Panchayat official",mod_a:"Admin",
+who_citizen:"Probably uses a basic smartphone and may not use computers much. Pages must be simple, easy to read and available in Tamil.",
+who_official:"President, Secretary, clerks and staff. Knows forms and basic office software and wants to see pending work right away.",
+who_admin:"Technically skilled. Responsible for security, accounts and keeping the site running.",
+q_h:"Quality targets",q1:"people using the site at once",q2:"page load on a 3G connection",q3:"uptime, apart from planned maintenance",q4:"encryption for stored sensitive data, TLS when sent",q5v:"Daily",q5:"database backup",
+q6:"Passwords are hashed, and an account locks after too many failed logins.",q7:"Large readable text, short forms, phone-first layout, and basic accessibility for people with visual or motor difficulties.",q8:"Built so it can later connect to district and state e-governance portals and serve other panchayats.",
+r_h:"Rules the system follows",r1:"All traffic between users and the site goes over SSL/TLS.",r2:"Personal data follows Indian IT and data protection rules, and is collected only when a service needs it.",r3:"An official checks every application and its documents before approving.",r4:"Access depends on role, so each person sees and changes only what their job allows.",r5:"Every approval, payment and content change is saved in the audit log.",r6:"Notices, budgets and minutes stay public, with no login.",
+db_h:"Data model",db_t:"Table",db_f:"Main fields",
+st_h:"Technology options",st1:"Database",st2:"Backend",st3:"Frontend",st4:"Outside services",st4v:"payment gateway (UPI, cards, net banking), SMS gateway, email service",
+fu_h:"Future scope",fu1:"Links with state and national e-governance portals, such as e-Sevai and other Digital India services",fu2:"A mobile app that works offline where internet is weak",fu3:"A Tamil voice assistant or chatbot for people who find forms hard",fu4:"Live streaming and recordings of Gram Sabha meetings",fu5:"Dashboards on village development: water, sanitation, scheme progress",
+g_h:"Glossary",ref_h:"References",ref4:"Government of India web accessibility and security guidelines for public websites",
+ft1:"Software Requirements Specification: Gram Panchayat Website",ft2:"Document dated 21 October 2026",
+// dynamic
+otp_bad:"Enter a 10-digit mobile number.",otp_ok:"In the live site, an OTP would now be sent to ",
+trk_bad:"Enter an application number.",trk_none:"No application found with that number. Try one of the sample numbers.",
+trk_svc:"Service",trk_remark:"Official's remark",
+s_sub:"Submitted",s_rev:"Under review by an official",s_dec:"Decision made",s_rdy:"Certificate ready to download",s_back:"Sent back to you",
+sv_res:"Residence certificate",sv_inc:"Income certificate",sv_birth:"Birth certificate",
+rm_back:"Please upload a clearer copy of your ration card, then submit again.",
+pay_bad:"Enter your ward number and a valid amount.",pay_ok:"Next, you would go to the payment gateway to pay ₹{a} for {f}, ward {w}. After payment you can download a receipt.",
+comp_bad:"Describe the problem in a few words.",comp_ok:"In the live site you would get a reference number now and could follow this {c} complaint from submission to closure.",
+all:"All",nc_gs:"Gram Sabha",nc_tax:"Tax",nc_work:"Works",nc_bud:"Budget",nc_sch:"Schemes",
+n1:"Gram Sabha meeting for all wards",n2:"House tax: reminder to pay this month",n3:"Water supply off on Saturday for tank cleaning",n4:"Yearly budget summary published",n5:"New scheme details added to the Schemes page",
+n_none:"No notices match your search.",
+fr:{
+FR1:"Register with name, address, ward number, ID details and mobile number, then confirm the number with an OTP.",
+FR2:"Log in, edit your profile and look back at old applications and payments.",
+FR3:"Apply online for certificates and services and upload the documents that go with them.",
+FR4:"Follow the status of each application and download the certificate once it is approved.",
+FR5:"Pay house tax, water tax and other fees online and download a receipt.",
+FR6:"File a complaint or suggestion and follow it until it is closed.",
+FR7:"Get an SMS or email when an application changes, a payment is due or something is announced.",
+FR8:"See the pending applications and complaints for your area of work.",
+FR9:"Approve, reject or send back an application, with a written reason.",
+FR10:"Post notices, Gram Sabha dates and minutes, budgets and updates on development works.",
+FR11:"Update tax records and mark cash payments received at the office.",
+FR12:"Hand a complaint to a staff member and mark it resolved.",
+FR13:"Add, suspend or remove user accounts and set each person's role.",
+FR14:"Manage site content such as pages, scheme information and the photo gallery.",
+FR15:"Check the audit log of important actions.",
+FR16:"Generate reports, for example applications per month, tax collected and complaints resolved."},
+gl:[["Gram Panchayat (GP)","The elected local body that runs a village."],["Gram Sabha","The general meeting open to all registered voters in the village."],["Ward","A smaller division of a village, each with its own elected member."],["Panchayat President","The elected head of the Gram Panchayat."],["Panchayat Secretary","The staff member who looks after records and day-to-day work."],["House Tax","A yearly local tax on homes and commercial buildings."],["Certificate","An official document the panchayat issues, like a birth, death or residence proof."],["OTP","One-Time Password, the short code sent to your phone to confirm it is really you."],["Audit Log","A record of who did what, and when, in the system."]]
+},
+ta:{
+brand:"கிராம ஊராட்சி தளம்",nav_services:"சேவைகள்",nav_track:"நிலை அறிய",nav_notices:"அறிவிப்புகள்",nav_spec:"விவரக்குறிப்பு",
+eyebrow:"ஊராட்சி சேவைகள் ஆன்லைனில்",
+h1:"அலுவலகத்துக்கு அலையாமல் கிராம சேவைகள்.",
+lead:"சான்றிதழுக்கு விண்ணப்பிக்க, வீட்டு வரி செலுத்த, குறைகளைப் பதிவு செய்ய உங்கள் தொலைபேசியே போதும். அறிவிப்புகள், வரவு செலவு, கிராம சபைக் குறிப்புகள் உள்நுழையாமலே அனைவரும் பார்க்கலாம்.",
+cta1:"மொபைல் OTP மூலம் உள்நுழைக",cta2:"பொது அறிவிப்புகளைப் பார்க்க",
+d1:"சான்றிதழுக்கு விண்ணப்பம்",d2:"வீட்டு வரி செலுத்த",d3:"புகார் பதிவு",d4:"பொது அறிவிப்புகள்",
+s_h:"ஆன்லைனில் என்ன செய்யலாம்",s_p:"பெயர், முகவரி, வார்டு எண், அடையாள விவரங்கள், மொபைல் எண்ணுடன் ஒருமுறை பதிவு செய்தால் போதும். அதன் பிறகு ஒவ்வொரு சேவையும் ஆவணப் பதிவேற்றத்துடன் ஒரு சிறிய படிவம்.",
+s_cert:"சான்றிதழ்களும் உரிமங்களும்",c1:"பிறப்புச் சான்றிதழ்",c2:"இறப்புச் சான்றிதழ்",c3:"இருப்பிடச் சான்றிதழ்",c4:"வருமானச் சான்றிதழ்",c5:"வணிக உரிமம்",
+s_fee:"வரிகளும் உள்ளூர் கட்டணங்களும்",f1:"வீட்டு வரி",f1d:"ஆண்டுதோறும், வீடுகள் மற்றும் வணிகக் கட்டடங்களுக்கு",f2:"குடிநீர் வரி",f3:"பிற உள்ளூர் கட்டணங்கள்",
+s_more:"மேலும்",m1:"புகார்களும் பரிந்துரைகளும்",m2:"கிராம சபை தேதிகளும் குறிப்புகளும்",m3:"வரவு செலவும் வளர்ச்சிப் பணிகளும்",m4:"அரசுத் திட்ட விவரங்கள்",
+si_h:"உள்நுழைவு",si_p:"உங்கள் மொபைல் எண்ணை உள்ளிடவும். அது நீங்கள்தான் என உறுதிப்படுத்த ஒருமுறை கடவுச்சொல் (OTP) அனுப்பப்படும்.",mob:"மொபைல் எண்",otp_btn:"OTP அனுப்பு",
+demo:"செயல்முறை மாதிரி",sample:"மாதிரி தரவு",
+ok_h:"உள்நுழைந்த பிறகு",ok1:"சுயவிவரத்தைத் திருத்தலாம்",ok2:"பழைய விண்ணப்பங்கள், கட்டணங்கள் அனைத்தையும் பார்க்கலாம்",ok3:"ஏதேனும் மாறினால் SMS அல்லது மின்னஞ்சல் வரும்",ok4:"சான்றிதழ்கள், ரசீதுகளைப் பதிவிறக்கலாம்",
+t_h:"என் விண்ணப்பம் எங்கே?",t_p:"ஒவ்வொரு விண்ணப்பத்தின் நிலையும் காட்டப்படும். அலுவலர் ஒப்புதல் அளிக்கலாம், நிராகரிக்கலாம், அல்லது எழுத்துப்பூர்வ காரணத்துடன் திருப்பி அனுப்பலாம். எதுவும் தானாக ஒப்புதல் பெறாது.",
+t_lbl:"விண்ணப்ப எண்",t_btn:"நிலையைப் பார்",t_try:"முயன்று பார்க்க மாதிரி எண்கள்:",
+p_h:"வரி, கட்டணம் செலுத்த",p_p:"UPI, அட்டை அல்லது இணைய வங்கி மூலம் செலுத்தி ரசீதைப் பதிவிறக்கலாம்.",p_fee:"எதற்காகச் செலுத்துகிறீர்கள்?",ward:"வார்டு எண்",amt:"தொகை (₹)",p_btn:"கட்டணப் பக்கத்துக்குச் செல்",
+c_h:"புகார் பதிவு",c_p:"உடைந்த தெருவிளக்கு, தண்ணீர்க் கசிவு, ஊருக்கான ஒரு பரிந்துரை. முடியும் வரை பின்தொடரலாம்.",c_cat:"வகை",c_desc:"என்ன பிரச்சனை?",c_btn:"சமர்ப்பி",
+cat_water:"குடிநீர் வழங்கல்",cat_light:"தெருவிளக்குகள்",cat_road:"சாலைகளும் வடிகால்களும்",cat_waste:"குப்பையும் துப்புரவும்",cat_sugg:"பரிந்துரை",
+n_h:"பொது அறிவிப்புப் பலகை",n_p:"தகவல் அறியும் உரிமைச் சட்டத்தின்படி உள்நுழையாமலே அனைவரும் பார்க்கலாம். தேடலாம் அல்லது வகைப்படி வடிகட்டலாம்.",n_search:"அறிவிப்புகளைத் தேடு",
+sp_eye:"மென்பொருள் தேவை விவரக்குறிப்பிலிருந்து",sp_h:"இந்தத் தளம் எப்படி செயல்படும்",
+sp_p:"ஒரே தளம், மூன்று பிரிவுகள். குடிமக்களுக்கு தமிழ், ஆங்கிலத்தில் எளிய பக்கங்கள். அலுவலர்களுக்கு நிலுவைப் பணிகள் முதலில். நிர்வாகி கணக்குகள், உள்ளடக்கம், தணிக்கைப் பதிவைக் கவனிப்பார்.",
+mod_c:"குடிமகன்",mod_o:"ஊராட்சி அலுவலர்",mod_a:"நிர்வாகி",
+who_citizen:"பெரும்பாலும் அடிப்படை ஸ்மார்ட்போன் பயன்படுத்துபவர்; கணினி அதிகம் பழக்கமில்லாதவராக இருக்கலாம். பக்கங்கள் எளிமையாகவும் தமிழில் படிக்க எளிதாகவும் இருக்க வேண்டும்.",
+who_official:"தலைவர், செயலர், எழுத்தர்கள், பணியாளர்கள். படிவங்களும் அடிப்படை அலுவலக மென்பொருளும் தெரிந்தவர்; நிலுவைப் பணிகளை உடனே பார்க்க விரும்புவார்.",
+who_admin:"தொழில்நுட்பத் திறன் உள்ளவர். பாதுகாப்பு, கணக்குகள், தளம் தொடர்ந்து இயங்குவது ஆகியவற்றுக்குப் பொறுப்பு.",
+q_h:"தர இலக்குகள்",q1:"பேர் ஒரே நேரத்தில் தளத்தைப் பயன்படுத்தலாம்",q2:"3G இணைப்பில் பக்கம் திறக்கும் நேரம்",q3:"திட்டமிட்ட பராமரிப்பு நீங்கலாக இயக்க நேரம்",q4:"சேமிக்கப்படும் முக்கிய தரவுக்கு குறியாக்கம்; அனுப்பும்போது TLS",q5v:"தினமும்",q5:"தரவுத்தள காப்புப் பிரதி",
+q6:"கடவுச்சொற்கள் மறையாக்கம் செய்யப்படும்; பலமுறை தவறாக உள்நுழைந்தால் கணக்கு பூட்டப்படும்.",q7:"பெரிய படிக்கத்தக்க எழுத்து, சிறிய படிவங்கள், தொலைபேசிக்கு முன்னுரிமை, பார்வை அல்லது இயக்கச் சிரமம் உள்ளவர்களுக்கான அடிப்படை அணுகல்தன்மை.",q8:"பின்னர் மாவட்ட, மாநில மின்னாளுமை தளங்களுடன் இணைக்கவும், பிற ஊராட்சிகளுக்கும் சேவை செய்யவும் இயலும்படி உருவாக்கப்படும்.",
+r_h:"அமைப்பு பின்பற்றும் விதிகள்",r1:"பயனருக்கும் தளத்துக்கும் இடையிலான அனைத்துத் தகவல்களும் SSL/TLS வழியாகச் செல்லும்.",r2:"தனிப்பட்ட தரவு இந்திய தகவல் தொழில்நுட்ப, தரவுப் பாதுகாப்பு விதிகளைப் பின்பற்றும்; சேவைக்குத் தேவைப்படும்போது மட்டுமே சேகரிக்கப்படும்.",r3:"ஒப்புதலுக்கு முன் ஒவ்வொரு விண்ணப்பத்தையும் ஆவணங்களையும் அலுவலர் சரிபார்ப்பார்.",r4:"பங்கைப் பொறுத்தே அணுகல்; ஒவ்வொருவரும் தம் பணிக்குத் தேவையானதை மட்டுமே பார்க்கவும் மாற்றவும் முடியும்.",r5:"ஒவ்வொரு ஒப்புதல், கட்டணம், உள்ளடக்க மாற்றமும் தணிக்கைப் பதிவில் சேமிக்கப்படும்.",r6:"அறிவிப்புகள், வரவு செலவு, குறிப்புகள் உள்நுழைவின்றி பொதுவில் இருக்கும்.",
+db_h:"தரவு அமைப்பு",db_t:"அட்டவணை",db_f:"முக்கிய புலங்கள்",
+st_h:"தொழில்நுட்பத் தேர்வுகள்",st1:"தரவுத்தளம்",st2:"பின்புலம்",st3:"முன்புலம்",st4:"வெளிச் சேவைகள்",st4v:"கட்டண நுழைவாயில் (UPI, அட்டைகள், இணைய வங்கி), SMS நுழைவாயில், மின்னஞ்சல் சேவை",
+fu_h:"எதிர்காலத் திட்டங்கள்",fu1:"இ-சேவை உள்ளிட்ட மாநில, தேசிய மின்னாளுமை தளங்களுடன் இணைப்பு",fu2:"இணையம் பலவீனமான இடங்களில் இணைப்பின்றி இயங்கும் கைப்பேசிச் செயலி",fu3:"படிவங்கள் கடினமாக உள்ளவர்களுக்கு தமிழ்க் குரல் உதவியாளர் அல்லது அரட்டைப் பொறி",fu4:"கிராம சபைக் கூட்டங்களின் நேரலையும் பதிவுகளும்",fu5:"நீர், துப்புரவு, திட்ட முன்னேற்றம் போன்ற கிராம வளர்ச்சி முகப்புப் பலகைகள்",
+g_h:"சொற்களஞ்சியம்",ref_h:"மேற்கோள்கள்",ref4:"பொது இணையதளங்களுக்கான இந்திய அரசின் அணுகல்தன்மை, பாதுகாப்பு வழிகாட்டுதல்கள்",
+ft1:"மென்பொருள் தேவை விவரக்குறிப்பு: கிராம ஊராட்சி இணையதளம்",ft2:"ஆவணத் தேதி: 21 அக்டோபர் 2026",
+otp_bad:"10 இலக்க மொபைல் எண்ணை உள்ளிடவும்.",otp_ok:"உண்மைத் தளத்தில் இப்போது OTP அனுப்பப்படும்: ",
+trk_bad:"விண்ணப்ப எண்ணை உள்ளிடவும்.",trk_none:"அந்த எண்ணில் விண்ணப்பம் இல்லை. மாதிரி எண்களில் ஒன்றை முயலவும்.",
+trk_svc:"சேவை",trk_remark:"அலுவலரின் குறிப்பு",
+s_sub:"சமர்ப்பிக்கப்பட்டது",s_rev:"அலுவலர் பரிசீலனையில்",s_dec:"முடிவு எடுக்கப்பட்டது",s_rdy:"சான்றிதழ் பதிவிறக்கத் தயார்",s_back:"உங்களுக்குத் திருப்பி அனுப்பப்பட்டது",
+sv_res:"இருப்பிடச் சான்றிதழ்",sv_inc:"வருமானச் சான்றிதழ்",sv_birth:"பிறப்புச் சான்றிதழ்",
+rm_back:"உங்கள் குடும்ப அட்டையின் தெளிவான நகலைப் பதிவேற்றி மீண்டும் சமர்ப்பிக்கவும்.",
+pay_bad:"வார்டு எண்ணையும் சரியான தொகையையும் உள்ளிடவும்.",pay_ok:"அடுத்து, வார்டு {w}, {f}க்கு ₹{a} செலுத்த கட்டண நுழைவாயிலுக்குச் செல்வீர்கள். செலுத்திய பின் ரசீதைப் பதிவிறக்கலாம்.",
+comp_bad:"பிரச்சனையை சில சொற்களில் விவரிக்கவும்.",comp_ok:"உண்மைத் தளத்தில் இப்போது ஒரு குறிப்பு எண் கிடைக்கும்; இந்த {c} புகாரைச் சமர்ப்பிப்பு முதல் முடிவு வரை பின்தொடரலாம்.",
+all:"அனைத்தும்",nc_gs:"கிராம சபை",nc_tax:"வரி",nc_work:"பணிகள்",nc_bud:"வரவு செலவு",nc_sch:"திட்டங்கள்",
+n1:"அனைத்து வார்டுகளுக்குமான கிராம சபைக் கூட்டம்",n2:"வீட்டு வரி: இம்மாதம் செலுத்த நினைவூட்டல்",n3:"தொட்டி சுத்தம் செய்வதால் சனிக்கிழமை குடிநீர் நிறுத்தம்",n4:"ஆண்டு வரவு செலவுச் சுருக்கம் வெளியிடப்பட்டது",n5:"திட்டங்கள் பக்கத்தில் புதிய திட்ட விவரங்கள் சேர்க்கப்பட்டன",
+n_none:"தேடலுக்குப் பொருந்தும் அறிவிப்புகள் இல்லை.",
+fr:{
+FR1:"பெயர், முகவரி, வார்டு எண், அடையாள விவரங்கள், மொபைல் எண்ணுடன் பதிவு செய்து, OTP மூலம் எண்ணை உறுதிப்படுத்தலாம்.",
+FR2:"உள்நுழைந்து சுயவிவரத்தைத் திருத்தி, பழைய விண்ணப்பங்கள், கட்டணங்களைப் பார்க்கலாம்.",
+FR3:"சான்றிதழ்கள், சேவைகளுக்கு ஆன்லைனில் விண்ணப்பித்து, தேவையான ஆவணங்களைப் பதிவேற்றலாம்.",
+FR4:"ஒவ்வொரு விண்ணப்பத்தின் நிலையையும் பின்தொடர்ந்து, ஒப்புதல் பெற்றதும் சான்றிதழைப் பதிவிறக்கலாம்.",
+FR5:"வீட்டு வரி, குடிநீர் வரி, பிற கட்டணங்களை ஆன்லைனில் செலுத்தி ரசீதைப் பதிவிறக்கலாம்.",
+FR6:"புகார் அல்லது பரிந்துரையைப் பதிவு செய்து, முடியும் வரை பின்தொடரலாம்.",
+FR7:"விண்ணப்பம் மாறினாலோ, கட்டணம் நிலுவையிலிருந்தாலோ, அறிவிப்பு வந்தாலோ SMS அல்லது மின்னஞ்சல் கிடைக்கும்.",
+FR8:"தங்கள் பணிப்பகுதிக்கான நிலுவை விண்ணப்பங்களையும் புகார்களையும் பார்க்கலாம்.",
+FR9:"எழுத்துப்பூர்வ காரணத்துடன் விண்ணப்பத்தை ஒப்புதல், நிராகரிப்பு அல்லது திருப்பி அனுப்புதல் செய்யலாம்.",
+FR10:"அறிவிப்புகள், கிராம சபை தேதிகள், குறிப்புகள், வரவு செலவு, வளர்ச்சிப் பணி விவரங்களை வெளியிடலாம்.",
+FR11:"வரிப் பதிவுகளைப் புதுப்பித்து, அலுவலகத்தில் பெற்ற ரொக்கக் கட்டணங்களைப் பதியலாம்.",
+FR12:"புகாரை ஒரு ஊழியருக்கு ஒதுக்கி, தீர்க்கப்பட்டதாகக் குறிக்கலாம்.",
+FR13:"பயனர் கணக்குகளைச் சேர்க்க, நிறுத்த, நீக்க; ஒவ்வொருவரின் பங்கையும் அமைக்கலாம்.",
+FR14:"பக்கங்கள், திட்ட விவரங்கள், புகைப்படத் தொகுப்பு போன்ற தள உள்ளடக்கத்தை நிர்வகிக்கலாம்.",
+FR15:"முக்கிய செயல்களின் தணிக்கைப் பதிவைப் பார்க்கலாம்.",
+FR16:"மாதவாரி விண்ணப்பங்கள், வசூலான வரி, தீர்க்கப்பட்ட புகார்கள் போன்ற அறிக்கைகளை உருவாக்கலாம்."},
+gl:[["கிராம ஊராட்சி (GP)","ஒரு கிராமத்தை நிர்வகிக்கும் தேர்ந்தெடுக்கப்பட்ட உள்ளாட்சி அமைப்பு."],["கிராம சபை","கிராமத்தின் பதிவு பெற்ற அனைத்து வாக்காளர்களும் பங்கேற்கும் பொதுக்கூட்டம்."],["வார்டு","கிராமத்தின் சிறிய பிரிவு; ஒவ்வொன்றுக்கும் தேர்ந்தெடுக்கப்பட்ட உறுப்பினர் உண்டு."],["ஊராட்சித் தலைவர்","கிராம ஊராட்சியின் தேர்ந்தெடுக்கப்பட்ட தலைவர்."],["ஊராட்சிச் செயலர்","பதிவேடுகளையும் அன்றாடப் பணிகளையும் கவனிக்கும் பணியாளர்."],["வீட்டு வரி","வீடுகள், வணிகக் கட்டடங்கள் மீதான ஆண்டு உள்ளூர் வரி."],["சான்றிதழ்","பிறப்பு, இறப்பு, இருப்பிடச் சான்று போன்று ஊராட்சி வழங்கும் அதிகாரபூர்வ ஆவணம்."],["OTP","ஒருமுறை கடவுச்சொல்; நீங்கள்தான் என உறுதிப்படுத்த தொலைபேசிக்கு வரும் சிறு குறியீடு."],["தணிக்கைப் பதிவு","அமைப்பில் யார், எப்போது, என்ன செய்தார் என்பதன் பதிவு."]]
+}};
+
+var MODS={citizen:["FR1","FR2","FR3","FR4","FR5","FR6","FR7"],official:["FR8","FR9","FR10","FR11","FR12"],admin:["FR13","FR14","FR15","FR16"]};
+var NOTICES=[
+ {k:"n1",c:"nc_gs",d:"2026-11-14"},{k:"n2",c:"nc_tax",d:"2026-11-03"},{k:"n3",c:"nc_work",d:"2026-11-07"},
+ {k:"n4",c:"nc_bud",d:"2026-10-28"},{k:"n5",c:"nc_sch",d:"2026-10-25"}];
+var APPS={
+ "GP-2026-00417":{svc:"sv_res",step:1},
+ "GP-2026-00391":{svc:"sv_inc",step:3},
+ "GP-2026-00402":{svc:"sv_birth",step:-1}};
+var STEPS=["s_sub","s_rev","s_dec","s_rdy"];
+
+var lang="en",mod="citizen",cat="all";
+var $=function(id){return document.getElementById(id)};
+function t(k){return (T[lang][k]!==undefined?T[lang][k]:T.en[k])||k}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function applyStatic(){
+  document.documentElement.lang=lang==="ta"?"ta":"en";
+  document.querySelectorAll("[data-i18n]").forEach(function(el){el.textContent=t(el.getAttribute("data-i18n"))});
+  $("l-en").setAttribute("aria-pressed",lang==="en");$("l-ta").setAttribute("aria-pressed",lang==="ta");
+}
+function renderSpec(){
+  document.querySelectorAll("#tabs button").forEach(function(b){b.setAttribute("aria-selected",b.dataset.m===mod)});
+  $("who").textContent=t("who_"+mod);
+  $("tabpanel").setAttribute("aria-labelledby","tab-"+mod);
+  $("frs").innerHTML=MODS[mod].map(function(id){return '<li><b>'+id+'</b><span>'+esc(T[lang].fr[id])+'</span></li>'}).join("");
+  $("gl").innerHTML=T[lang].gl.map(function(g){return '<div><dt>'+esc(g[0])+'</dt><dd>'+esc(g[1])+'</dd></div>'}).join("");
+}
+function renderChips(){
+  var keys=["all"].concat(NOTICES.map(function(n){return n.c}).filter(function(v,i,a){return a.indexOf(v)===i}));
+  $("chips").innerHTML=keys.map(function(k){return '<button type="button" class="chip" data-c="'+k+'" aria-pressed="'+(cat===k)+'">'+esc(t(k))+'</button>'}).join("");
+}
+function renderNotices(){
+  var q=$("q").value.trim().toLowerCase();
+  var rows=NOTICES.filter(function(n){return (cat==="all"||n.c===cat)&&(!q||t(n.k).toLowerCase().indexOf(q)>-1)});
+  $("notes").innerHTML=rows.length?rows.map(function(n){
+    var d=new Date(n.d+"T00:00:00");
+    var ds=d.toLocaleDateString(lang==="ta"?"ta-IN":"en-IN",{day:"numeric",month:"short",year:"numeric"});
+    return '<li><time datetime="'+n.d+'">'+esc(ds)+'</time><strong>'+esc(t(n.k))+'</strong><span class="cat">'+esc(t(n.c))+'</span></li>';
+  }).join(""):'<li class="empty">'+esc(t("n_none"))+'</li>';
+}
+function renderTrack(){
+  var id=$("appid").value.trim().toUpperCase(),box=$("track-out");
+  if(!id){box.innerHTML='<p>'+esc(t("trk_bad"))+'</p>';return}
+  var a=APPS[id];
+  if(!a){box.innerHTML='<p>'+esc(t("trk_none"))+'</p>';return}
+  var h='<div><span class="eyebrow">'+esc(t("trk_svc"))+'</span><h3>'+esc(t(a.svc))+'</h3><span class="mono">'+esc(id)+'</span></div><ol class="steps">';
+  if(a.step===-1){
+    h+='<li class="done"><b>1</b>'+esc(t("s_sub"))+'</li><li class="done"><b>2</b>'+esc(t("s_rev"))+'</li><li class="back"><b>!</b>'+esc(t("s_back"))+'</li></ol><div class="out"><strong>'+esc(t("trk_remark"))+'</strong><br>'+esc(t("rm_back"))+'</div>';
+  }else{
+    h+=STEPS.map(function(s,i){var c=i<a.step?"done":i===a.step?"now":"";return '<li class="'+c+'"><b>'+(i<a.step?"✓":i+1)+'</b>'+esc(t(s))+'</li>'}).join("")+'</ol>';
+  }
+  box.innerHTML=h;
+}
+function show(id,msg){var o=$(id);o.textContent=msg;o.hidden=false}
+
+$("l-en").onclick=function(){setLang("en")};
+$("l-ta").onclick=function(){setLang("ta")};
+function setLang(l){
+  lang=l;try{localStorage.setItem("gp-lang",l)}catch(e){}
+  applyStatic();renderSpec();renderChips();renderNotices();renderTrack();
+  ["otp-out","pay-out","comp-out"].forEach(function(i){$(i).hidden=true});
+}
+$("tabs").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;mod=b.dataset.m;renderSpec()});
+$("chips").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;cat=b.dataset.c;renderChips();renderNotices()});
+$("q").addEventListener("input",renderNotices);
+
+$("f-otp").addEventListener("submit",function(e){e.preventDefault();
+  var m=$("mob").value.replace(/\D/g,"");
+  if(m.length!==10){show("otp-out",t("otp_bad"));return}
+  show("otp-out",t("otp_ok")+"••••••"+m.slice(-4));
+});
+$("f-track").addEventListener("submit",function(e){e.preventDefault();renderTrack()});
+$("f-pay").addEventListener("submit",function(e){e.preventDefault();
+  var w=$("ward").value.trim(),a=parseFloat($("amt").value);
+  if(!w||!(a>0)){show("pay-out",t("pay_bad"));return}
+  var f=$("fee").options[$("fee").selectedIndex].textContent;
+  show("pay-out",t("pay_ok").replace("{a}",a.toLocaleString("en-IN")).replace("{f}",f).replace("{w}",w));
+});
+$("f-comp").addEventListener("submit",function(e){e.preventDefault();
+  if($("desc").value.trim().length<5){show("comp-out",t("comp_bad"));return}
+  var c=$("cat").options[$("cat").selectedIndex].textContent.toLowerCase();
+  show("comp-out",t("comp_ok").replace("{c}",c));
+});
+
+try{var s=localStorage.getItem("gp-lang");if(s==="ta"||s==="en")lang=s}catch(e){}
+applyStatic();renderSpec();renderChips();renderNotices();renderTrack();
+})();
+</script>
+
+</body></html>
